@@ -1,6 +1,6 @@
-export const assembleEligibleClientResponse = totalEconomy => ({
+export const assembleEligibleClientResponse = annualSavings => ({
   elegivel: true,
-  economiaAnualDeCO2: totalEconomy
+  economiaAnualDeCO2: annualSavings
 })
 
 export const assembleIneligibleClientResponse = reasons => ({
