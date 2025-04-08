@@ -49,7 +49,7 @@ export const validateInput = body => {
   const isValid = schemaValidator(body)
   if (!isValid) {
     localizeErrors(schemaValidator.errors)
-    throw assembleApiError(400, constants.errorMessages.invalidRequest, schemaValidator.errors.map(error => {
+    throw assembleApiError(constants.errorMessages.invalidRequest, schemaValidator.errors.map(error => {
       const field = error.instancePath.slice(1).split('/').join('.') || 'body'
       return `${field} ${error.message}`
     }))

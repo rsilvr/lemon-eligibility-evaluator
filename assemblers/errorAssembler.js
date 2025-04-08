@@ -1,5 +1,5 @@
-export const assembleApiError = (status, erro, detalhe) => ({
-  status,
+export const assembleApiError = (erro, detalhe, status = 400) => ({
   erro,
-  detalhe
+  detalhe,
+  status
 })
