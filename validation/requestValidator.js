@@ -1,6 +1,8 @@
 import Ajv from 'ajv'
 import localize from 'ajv-i18n'
 import { connectionTypes, consumptionClasses, tariffScheme, cpf, cnpj } from './types.js'
+import { assembleApiError } from '../assemblers/errorAssembler.js'
+import constants from '../res/constants.js'
 
 const ajv = new Ajv({ allErrors: true })
 
@@ -47,14 +49,9 @@ export const validateInput = body => {
   const isValid = schemaValidator(body)
   if (!isValid) {
     localizeErrors(schemaValidator.errors)
-    console.log(JSON.stringify(schemaValidator.errors, null, 2))
-    return {
-      status: 400,
-      message: 'Requisição inválida',
-      errors: schemaValidator.errors.map(error => {
-        const field = error.instancePath.slice(1).split('/').join('.') || 'body'
-        return `${field} ${error.message}`
-      }),
-    }
+    throw assembleApiError(400, constants.errorMessages.invalidRequest, schemaValidator.errors.map(error => {
+      const field = error.instancePath.slice(1).split('/').join('.') || 'body'
+      return `${field} ${error.message}`
+    }))
   }
 }
