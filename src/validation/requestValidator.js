@@ -6,16 +6,6 @@ const constants = require('../res/constants')
 
 const ajv = new Ajv({ allErrors: true })
 
-const cpf = {
-  type: 'string',
-  pattern: '^\\d{11}$'
-}
-
-const cnpj = {
-  type: 'string',
-  pattern: '^\\d{14}$'
-}
-
 const enumOf = values => ({
   type: typeof values[0],
   enum: values
@@ -35,7 +25,8 @@ const requestBodySchema = {
   ],
   properties: {
     numeroDoDocumento: { 
-      oneOf: [cpf, cnpj]
+      type: 'string',
+      pattern: '^(\\d{11}|\\d{14})$'
     },
     tipoDeConexao: enumOf(Object.values(connectionTypes)),
     classeDeConsumo: enumOf(Object.values(consumptionClasses)),
