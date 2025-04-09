@@ -50,11 +50,17 @@ const validateInput = body => {
   const isValid = schemaValidator(body)
   if (!isValid) {
     localizeErrors(schemaValidator.errors)
-    throw assembleApiError(constants.errorMessages.invalidRequest, schemaValidator.errors.map(error => {
-      const field = error.instancePath.slice(1).split('/').join('.') || 'body'
-      return `${field} ${error.message}`
-    }))
+    throw assembleApiError(constants.errorMessages.invalidRequest, formatErrorMessage(schemaValidator))
   }
+}
+
+const formatErrorMessage = validator => {
+  return validator.errors.map(error => {
+    const { keyword } = error
+    const field = error.instancePath.slice(1).split('/').join('.') || 'body'
+    const complement = keyword === 'enum' ? ` (${error.params.allowedValues.join(', ')})` : ''
+    return `${field} ${error.message}${complement}`
+  })
 }
 
 module.exports = {
