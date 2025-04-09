@@ -1,12 +1,11 @@
 import { defineConfig } from 'eslint/config'
 import globals from 'globals'
-import jestPlugin from 'eslint-plugin-jest'
 import js from '@eslint/js'
 
 export default defineConfig([
 	{ 
 		files: ['**/*.js'], 
-		plugins: { js, jest: jestPlugin },
+		plugins: { js },
 		extends: ['js/recommended'],
 		languageOptions: {
 			sourceType: 'commonjs',
