@@ -1,13 +1,12 @@
-import express, { json } from 'express'
-import { validateInput } from './validation/requestValidator.js'
-import constants from './res/constants.js'
-import { evaluateEligibility } from './service/eligibilityService.js'
-import { assembleEligibilityRequest } from './assemblers/requestAssembler.js'
+const express = require('express')
+const { validateInput } = require('./validation/requestValidator')
+const constants = require('./res/constants')
+const { evaluateEligibility } = require('./service/eligibilityService')
+const { assembleEligibilityRequest } = require('./assemblers/requestAssembler')
 
 const app = express()
-const port = process.env.PORT || 3000
 
-app.use(json())
+app.use(express.json())
 
 app.post('/eligibility', (req, res) => {
   try {
@@ -26,6 +25,4 @@ app.post('/eligibility', (req, res) => {
   }
 })
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`)
-})
+module.exports = app

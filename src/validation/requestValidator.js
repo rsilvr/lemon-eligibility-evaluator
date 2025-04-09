@@ -1,10 +1,20 @@
-import Ajv from 'ajv'
-import localize from 'ajv-i18n'
-import { connectionTypes, consumptionClasses, tariffScheme, cpf, cnpj } from './types.js'
-import { assembleApiError } from '../assemblers/errorAssembler.js'
-import constants from '../res/constants.js'
+const Ajv = require('ajv')
+const localize = require('ajv-i18n')
+const { connectionTypes, consumptionClasses, tariffScheme } = require('../res/constants')
+const { assembleApiError } = require('../assemblers/errorAssembler')
+const constants = require('../res/constants')
 
 const ajv = new Ajv({ allErrors: true })
+
+const cpf = {
+  type: 'string',
+  pattern: '^\\d{11}$'
+}
+
+const cnpj = {
+  type: 'string',
+  pattern: '^\\d{14}$'
+}
 
 const enumOf = values => ({
   type: typeof values[0],
@@ -27,9 +37,9 @@ const requestBodySchema = {
     numeroDoDocumento: { 
       oneOf: [cpf, cnpj]
     },
-    tipoDeConexao: enumOf(connectionTypes),
-    classeDeConsumo: enumOf(consumptionClasses),
-    modalidadeTarifaria: enumOf(tariffScheme),
+    tipoDeConexao: enumOf(Object.values(connectionTypes)),
+    classeDeConsumo: enumOf(Object.values(consumptionClasses)),
+    modalidadeTarifaria: enumOf(Object.values(tariffScheme)),
     historicoDeConsumo: {
       type: 'array',
       minItems: 3,
@@ -45,7 +55,7 @@ const requestBodySchema = {
 
 const schemaValidator = ajv.compile(requestBodySchema)
 
-export const validateInput = body => {
+const validateInput = body => {
   const isValid = schemaValidator(body)
   if (!isValid) {
     localizeErrors(schemaValidator.errors)
@@ -54,4 +64,8 @@ export const validateInput = body => {
       return `${field} ${error.message}`
     }))
   }
+}
+
+module.exports = {
+  validateInput
 }

@@ -1,7 +1,5 @@
-import { assembleEligibleClientResponse, assembleIneligibleClientResponse } from '../assemblers/responseAssembler.js'
-import constants from '../res/constants.js'
-
-const { connectionTypes, consumptionClasses, tariffScheme, ineligibilityReasons, co2SavingInGramsByKWh } = constants
+const { assembleEligibleClientResponse, assembleIneligibleClientResponse } = require('../assemblers/responseAssembler')
+const { connectionTypes, consumptionClasses, tariffScheme, ineligibilityReasons, co2SavingInGramsByKWh } = require('../res/constants')
 
 const eligibleConsumptionClasses = [
   consumptionClasses.comercial,
@@ -20,7 +18,7 @@ const minimumConsumptionByConnectionType = {
   [connectionTypes.trifasico]: 750
 }
 
-export const evaluateEligibility = payload => {
+const evaluateEligibility = payload => {
   const reasons = []
   if (!eligibleConsumptionClasses.includes(payload.consumptionClass)) {
     reasons.push(ineligibilityReasons.ineligibleConsumptionClass)
@@ -48,4 +46,8 @@ const calculateCO2AnnualSavingsInKg = meanConsumption => {
   const annualConsumption = Math.round(meanConsumption * 12)
   const totalSavings = annualConsumption * co2SavingInGramsByKWh
   return totalSavings / 1000
+}
+
+module.exports = {
+  evaluateEligibility
 }
