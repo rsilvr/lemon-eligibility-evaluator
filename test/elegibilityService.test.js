@@ -13,6 +13,7 @@ const validBody = ({ numeroDoDocumento = '12345678909', tipoDeConexao = 'bifasic
 const invokeService = body => request(app).post('/eligibility').send(body)
 
 describe('Eligibility API test', () => {
+  test('Should validate input', () => checkInputValidations())
   test('Should check eligible consumption classes', async () => {
     const ineligibleConsumptionClasses = ['rural', 'poderPublico']
     await Promise.all(ineligibleConsumptionClasses.map(consumptionClass => {
@@ -49,10 +50,10 @@ describe('Eligibility API test', () => {
     await invokeService(body)
     .expect((res) => res.body.razoesDeInelegibilidade.sort())
     .expect(200, assembleIneligibleClientResponse([
-      'Modalidade tarifária não aceita', 
       'Classe de consumo não aceita', 
-      'Consumo muito baixo para tipo de conexão'
-    ].sort()))
+      'Consumo muito baixo para tipo de conexão',
+      'Modalidade tarifária não aceita'
+    ]))
   })
   test('Should evaluate eligible client and calculate its savings', async () => {
     await invokeService(validBody()).expect(200, assembleEligibleClientResponse(504))
@@ -78,6 +79,79 @@ describe('Eligibility API test', () => {
     }))
   })
 })
+
+const checkInputValidations = () => Promise.all([
+  validateRequiredAndType(validBody, 'numeroDoDocumento'),
+  validateInputError(validBody({ numeroDoDocumento: 'X' }), 'numeroDoDocumento deve corresponder ao padrão "^(\\d{11}|\\d{14})$"'),
+  validateRequiredAndType(validBody, 'tipoDeConexao'),
+  validateEnum(validBody, 'tipoDeConexao', ['bifasico', 'monofasico', 'trifasico']),
+  validateRequiredAndType(validBody, 'classeDeConsumo'),
+  validateEnum(validBody, 'classeDeConsumo', ['comercial', 'industrial', 'poderPublico', 'residencial', 'rural']),
+  validateRequiredAndType(validBody, 'modalidadeTarifaria'),
+  validateEnum(validBody, 'modalidadeTarifaria', ['azul', 'branca', 'convencional', 'verde']),
+  validateRequiredAndType(validBody, 'historicoDeConsumo', 'array'),
+  validateInputError(validBody({ historicoDeConsumo: ['1'] }), 'historicoDeConsumo.0 deve ser um número inteiro'),
+  validateInputError(validBody({ historicoDeConsumo: [-1] }), 'historicoDeConsumo.0 deve ser >= 0'),
+  validateInputError(validBody({ historicoDeConsumo: [10000] }), 'historicoDeConsumo.0 deve ser <= 9999'),
+  validateInputError(validBody({ historicoDeConsumo: [1, 2] }), 'historicoDeConsumo não deve ter menos que 3 elementos'),
+  validateInputError(validBody({ historicoDeConsumo: Array(13).fill(0) }), 'historicoDeConsumo não deve ter mais que 12 elementos'),
+])
+
+const possibleTypes = {
+  string: 'x', 
+  number: 1,
+  boolean: true,
+  object: {}, 
+  array: [1, 2, 3]
+}
+
+const typeTranslations = {
+  string: 'um texto',
+  number: 'um número inteiro',
+  array: 'array'
+}
+
+const validateRequiredAndType = async (payloadGenerator, key, expectedType = 'string') => {
+  await Promise.all([
+    validateRequired(payloadGenerator, key),
+    validateType(payloadGenerator, key, expectedType)
+  ])
+}
+
+const validateRequired = async (payloadGenerator, key) => {
+  const payload = payloadGenerator()
+  const invalidPayload = { ...payload }
+  delete invalidPayload[key]
+  const expectedError = `body deve ter a propriedade obrigatória ${key}`
+  return validateInputError(invalidPayload, expectedError)
+}
+
+const validateType = async (payloadGenerator, key, expectedType) => {
+  await Promise.all(Object.keys(possibleTypes).filter(type => type !== expectedType).map(type => {
+    const payload = payloadGenerator()
+    const invalidPayload = { ...payload }
+    invalidPayload[key] = possibleTypes[type]
+    const typeTranslation = typeTranslations[expectedType]
+    const expectedError = `${key} deve ser ${typeTranslation}`
+    return validateInputError(invalidPayload, expectedError)
+  }))
+}
+
+const validateEnum = async (payloadGenerator, key, allowedValues) => {
+  const payload = payloadGenerator()
+  const invalidPayload = { ...payload }
+  invalidPayload[key] = 'invalidValue'
+  const expectedError = `${key} deve ser igual a um dos valores permitidos (${allowedValues.join(', ')})`
+  return validateInputError(invalidPayload, expectedError)
+}
+
+const validateInputError = (payload, expectedError) => {
+  return invokeService(payload).expect(400)
+  .expect(res => {
+    expect(res.body.erro).toBe('Requisição inválida')
+    expect(res.body.detalhe).toContain(expectedError)
+  })
+}
 
 const assembleEligibleClientResponse = annualSavings => ({
   elegivel: true,

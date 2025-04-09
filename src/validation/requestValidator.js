@@ -28,9 +28,9 @@ const requestBodySchema = {
       type: 'string',
       pattern: '^(\\d{11}|\\d{14})$'
     },
-    tipoDeConexao: enumOf(Object.values(connectionTypes)),
-    classeDeConsumo: enumOf(Object.values(consumptionClasses)),
-    modalidadeTarifaria: enumOf(Object.values(tariffScheme)),
+    tipoDeConexao: enumOf(Object.values(connectionTypes).sort()),
+    classeDeConsumo: enumOf(Object.values(consumptionClasses).sort()),
+    modalidadeTarifaria: enumOf(Object.values(tariffScheme).sort()),
     historicoDeConsumo: {
       type: 'array',
       minItems: 3,
