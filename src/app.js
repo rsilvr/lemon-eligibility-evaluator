@@ -1,4 +1,5 @@
 const express = require('express')
+const logger = require('./utils/logger')
 const { validateInput } = require('./validation/requestValidator')
 const constants = require('./res/constants')
 const { evaluateEligibility } = require('./service/eligibilityService')
@@ -7,6 +8,11 @@ const { assembleEligibilityRequest } = require('./assemblers/requestAssembler')
 const app = express()
 
 app.use(express.json())
+
+app.use((req, res, next) => {
+  logger.http(req.body, { method: req.method, url: req.url })
+  next()
+})
 
 app.post('/eligibility', (req, res) => {
   validateInput(req.body)
@@ -21,6 +27,7 @@ app.use((err, req, res, next) => {
 })
 
 app.use((err, req, res, _next) => {
+  logger.error(logger.format.transform(err))
   if (err.name === 'SyntaxError') return res.status(400).json({ erro: constants.errorMessages.invalidRequest })
   return res.status(500).json({ erro: constants.errorMessages.internalError })
 })
