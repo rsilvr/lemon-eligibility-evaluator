@@ -1,7 +1,8 @@
 module.exports = {
   errorMessages: {
     invalidRequest: 'Requisição inválida',
-    internalError: 'Ocorreu um erro interno'
+    internalError: 'Ocorreu um erro interno',
+    invalidDocument: 'CPF/CNPJ inválido'
   },
   connectionTypes: {
     monofasico: 'monofasico', 

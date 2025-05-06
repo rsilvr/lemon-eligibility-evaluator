@@ -1,4 +1,5 @@
 const Ajv = require('ajv')
+const { isCnpj, isCpf } = require('validator-brazil')
 const localize = require('ajv-i18n')
 const { connectionTypes, consumptionClasses, tariffScheme } = require('../res/constants')
 const { assembleApiError } = require('../assemblers/errorAssembler')
@@ -51,6 +52,10 @@ const validateInput = body => {
   if (!isValid) {
     localizeErrors(schemaValidator.errors)
     throw assembleApiError(constants.errorMessages.invalidRequest, formatErrorMessage(schemaValidator))
+  }
+  const documentValidator = body.numeroDoDocumento.length === 11 ? isCpf : isCnpj
+  if (!documentValidator(body.numeroDoDocumento)) {
+    throw assembleApiError(constants.errorMessages.invalidRequest, [constants.errorMessages.invalidDocument])
   }
 }
 

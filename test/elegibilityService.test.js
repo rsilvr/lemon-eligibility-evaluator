@@ -83,6 +83,8 @@ describe('Eligibility API test', () => {
 const checkInputValidations = () => Promise.all([
   validateRequiredAndType(validBody, 'numeroDoDocumento'),
   validateInputError(validBody({ numeroDoDocumento: 'X' }), 'numeroDoDocumento deve corresponder ao padrão "^(\\d{11}|\\d{14})$"'),
+  validateInputError(validBody({ numeroDoDocumento: '12345678911' }), 'CPF/CNPJ inválido'),
+  validateInputError(validBody({ numeroDoDocumento: '12345678911123' }), 'CPF/CNPJ inválido'),
   validateRequiredAndType(validBody, 'tipoDeConexao'),
   validateEnum(validBody, 'tipoDeConexao', ['bifasico', 'monofasico', 'trifasico']),
   validateRequiredAndType(validBody, 'classeDeConsumo'),
